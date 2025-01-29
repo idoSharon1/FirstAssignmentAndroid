@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowInsetsCompat
 import com.example.tictactoe.databinding.ActivityMainBinding
 
@@ -17,7 +18,6 @@ class MainActivity : AppCompatActivity() {
         O
     }
 
-    private var firstTurn: PlayerTurnOptions = PlayerTurnOptions.X
     private var currentTurn: PlayerTurnOptions = PlayerTurnOptions.X
 
     private var boardList = mutableListOf<Button>()
@@ -55,6 +55,15 @@ class MainActivity : AppCompatActivity() {
         if (view !is Button) return
         addToBoard(view)
         updateCurrentTurnLabel()
+
+        if (isThereIsAWinner()) {
+            if (currentTurn ==  PlayerTurnOptions.X) notifyResult("Winner: O")
+            else notifyResult("Winner: X")
+        }
+
+        if (isBoardFull()) {
+            notifyResult("Draw")
+        }
     }
 
     private fun addToBoard(button: Button) {
@@ -69,6 +78,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun isBoardFull(): Boolean {
+      for (button in boardList) {
+          if (button.text == "") {
+              return  false
+          }
+      }
+
+        return true
+    }
+
+    private fun isThereIsAWinner(): Boolean {
+        for (i in 0..2) {
+            if (boardList[i * 3].text == boardList[i * 3 + 1].text &&
+                boardList[i * 3 + 1].text == boardList[i * 3 + 2].text &&
+                boardList[i * 3].text.isNotEmpty()) {
+                return true
+            }
+        }
+        for (i in 0..2) {
+            if (boardList[i].text == boardList[i + 3].text &&
+                boardList[i + 3].text == boardList[i + 6].text &&
+                boardList[i].text.isNotEmpty()) {
+                return true
+            }
+        }
+        if (boardList[0].text == boardList[4].text &&
+            boardList[4].text == boardList[8].text &&
+            boardList[0].text.isNotEmpty()) {
+            return true
+        }
+        if (boardList[2].text == boardList[4].text &&
+            boardList[4].text == boardList[6].text &&
+            boardList[2].text.isNotEmpty()) {
+            return true
+        }
+
+        return false
+    }
+
+    private fun notifyResult(outcome: String) {
+        AlertDialog.Builder(this).setTitle(outcome).setPositiveButton("Reset")
+        {
+           _,_ ->  resetBoard()
+        }.setCancelable(false).show()
+    }
+
     private fun updateCurrentTurnLabel(firstTurn: Boolean = false) {
         var updatedText: String = ""
 
@@ -80,9 +135,12 @@ class MainActivity : AppCompatActivity() {
         binding.turnText.text = updatedText
     }
 
-    private fun resetBoard() {
+    fun resetBoard() {
         for (currentButton in boardList) {
             currentButton.text = ""
         }
+
+        updateCurrentTurnLabel(true)
+        currentTurn = PlayerTurnOptions.X
     }
 }
